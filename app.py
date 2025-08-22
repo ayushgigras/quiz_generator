@@ -14,6 +14,7 @@ import time
 import plotly.graph_objects as go
 from datetime import datetime
 
+# Load environment variables (like API key)
 load_dotenv()
 
 # Page configuration with custom styling
@@ -24,7 +25,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
+# Initialize session state variables
 if 'quiz_history' not in st.session_state:
     st.session_state.quiz_history = []
 if 'total_questions_generated' not in st.session_state:
@@ -32,11 +33,13 @@ if 'total_questions_generated' not in st.session_state:
 if 'theme' not in st.session_state:
     st.session_state.theme = "Default"
 
+# Configure the Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Function to apply theme-based CSS
+# Function to apply theme-based CSS with improved targeting
 def apply_theme_css():
+    """Applies custom CSS for different themes, ensuring text is always visible."""
     current_theme = st.session_state.get('theme', 'Default')
     
     # Theme colors
@@ -48,9 +51,9 @@ def apply_theme_css():
         card_text_color = "#ffffff"
         gradient = "linear-gradient(135deg, rgba(187, 134, 252, 0.1), rgba(3, 218, 198, 0.1))"
         stats_gradient = "linear-gradient(135deg, #bb86fc 0%, #03dac6 100%)"
-        sidebar_gradient = "linear-gradient(180deg, rgba(187, 134, 252, 0.1), rgba(45, 45, 45, 0.1))"
+        sidebar_bg = "#2d2d2d"
+        sidebar_text_color = "#ffffff"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
-        upload_text_color = "#ffffff"
     elif current_theme == "Colorful":
         primary_color = "#4ecdc4"
         bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
@@ -59,9 +62,9 @@ def apply_theme_css():
         card_text_color = "#000000"
         gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(255, 107, 107, 0.2))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        sidebar_gradient = "linear-gradient(180deg, rgba(78, 205, 196, 0.1), rgba(255, 255, 255, 0.1))"
+        sidebar_bg = "#f0f0f0"
+        sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)"
-        upload_text_color = "#000000"
     else:  # Default
         primary_color = "#4ecdc4"
         bg_color = "#ffffff"
@@ -70,33 +73,27 @@ def apply_theme_css():
         card_text_color = "#000000"
         gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(255, 107, 107, 0.1))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        sidebar_gradient = "linear-gradient(180deg, rgba(78, 205, 196, 0.1), rgba(255, 255, 255, 0.1))"
+        sidebar_bg = "#f0f2f6"
+        sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
-        upload_text_color = "#000000"
-    
+
     st.markdown(f"""
     <style>
-        /* Force text visibility across all themes */
+        /* Overall App Styling */
         .stApp {{
             background: {bg_color};
-            color: {text_color} !important;
+            color: {text_color};
         }}
         
-        /* Main content text */
-        .main .block-container {{
-            color: {text_color} !important;
+        /* Sidebar Styling */
+        .st-emotion-cache-1wq0z5r, .st-emotion-cache-1wq0z5r > div {{
+            background-color: {sidebar_bg} !important;
         }}
-        
-        /* Ensure all text elements are visible */
-        p, div, span, h1, h2, h3, h4, h5, h6 {{
-            color: {text_color} !important;
+        .st-emotion-cache-1wq0z5r * {{
+            color: {sidebar_text_color} !important;
         }}
-        
-        /* Streamlit specific text elements */
-        .stMarkdown, .stText {{
-            color: {text_color} !important;
-        }}
-        
+
+        /* Header with animation */
         .main-header {{
             font-size: 3rem;
             font-weight: bold;
@@ -114,6 +111,7 @@ def apply_theme_css():
             to {{ filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
         }}
         
+        /* File upload section */
         .upload-section {{
             border: 2px dashed {primary_color};
             border-radius: 20px;
@@ -122,11 +120,6 @@ def apply_theme_css():
             background: {gradient};
             margin: 1rem 0;
             transition: all 0.3s ease;
-            color: {upload_text_color} !important;
-        }}
-        
-        .upload-section h3, .upload-section p, .upload-section * {{
-            color: {upload_text_color} !important;
         }}
         
         .upload-section:hover {{
@@ -134,9 +127,10 @@ def apply_theme_css():
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }}
         
+        /* Stats cards */
         .stats-card {{
             background: {stats_gradient};
-            color: white !important;
+            color: white;
             padding: 1.5rem;
             border-radius: 15px;
             text-align: center;
@@ -144,6 +138,7 @@ def apply_theme_css():
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }}
         
+        /* Quiz preview */
         .quiz-preview {{
             background: {card_bg};
             border-left: 5px solid {primary_color};
@@ -151,12 +146,13 @@ def apply_theme_css():
             border-radius: 10px;
             margin: 1rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            color: {card_text_color} !important;
+            color: {card_text_color};
         }}
         
+        /* Success animation */
         .success-animation {{
             animation: bounce 1s infinite;
-            color: {text_color} !important;
+            color: {text_color};
         }}
         
         @keyframes bounce {{
@@ -165,47 +161,39 @@ def apply_theme_css():
             60% {{ transform: translateY(-5px); }}
         }}
         
-        .sidebar-content {{
-            background: {sidebar_gradient};
-            padding: 1rem;
-            border-radius: 10px;
-            color: {text_color} !important;
-        }}
-        
-        /* File info section */
-        .stMetric {{
-            color: {text_color} !important;
-        }}
-        
-        .stMetric > div > div {{
-            color: {text_color} !important;
-        }}
-        
-        /* Form elements */
-        .stSelectbox label, .stNumberInput label, .stCheckbox label {{
-            color: {text_color} !important;
-        }}
-        
-        /* Expander content */
-        .streamlit-expanderContent {{
-            color: {text_color} !important;
-        }}
-        
-        /* Footer */
+        /* Footer text */
         .footer-text {{
-            color: #666 !important;
+            color: #666;
             text-align: center;
             padding: 2rem;
         }}
         
-        /* Strong emphasis on text visibility */
-        .main * {{
+        /* Ensure all text elements are visible */
+        .st-emotion-cache-1ae090d * {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-17z6k1z * {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-j7qwjs * {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-1p1f70 * {{
+             color: {text_color} !important;
+        }}
+        .st-emotion-cache-d14k0i * {{
             color: {text_color} !important;
         }}
         
-        /* Override any inherited transparent colors */
-        .main *:not(.main-header) {{
-            -webkit-text-fill-color: {text_color} !important;
+        /* Custom styles for file uploader and its internal text */
+        .st-emotion-cache-1g8w4t4 {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-h5g1k5 p {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-10n2u9v {{
+            color: {text_color} !important;
         }}
     </style>
     """, unsafe_allow_html=True)
@@ -218,7 +206,6 @@ st.markdown('<h1 class="main-header">🧠 AI Quiz Generator Pro</h1>', unsafe_al
 
 # Sidebar with statistics and settings
 with st.sidebar:
-    st.markdown('<div class="sidebar-content">', unsafe_allow_html=True)
     st.markdown("### 📊 Dashboard")
     
     # Statistics
@@ -240,14 +227,12 @@ with st.sidebar:
     # Settings
     st.markdown("### ⚙️ Settings")
     new_theme = st.selectbox("Choose Theme", ["Default", "Dark Mode", "Colorful"], 
-                            index=["Default", "Dark Mode", "Colorful"].index(st.session_state.theme))
+                             index=["Default", "Dark Mode", "Colorful"].index(st.session_state.theme))
     show_progress = st.checkbox("Show Progress Animations", value=True)
     
     if new_theme != st.session_state.theme:
         st.session_state.theme = new_theme
         st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Main content area
 col1, col2 = st.columns([2, 1])
@@ -278,7 +263,8 @@ with col2:
             st.write(f"**{key}:** {value}")
 
 # Progress tracking function
-def show_progress(message, duration=2):
+def show_progress_bar(message, duration=2):
+    """Shows a progress bar with a status message."""
     if show_progress:
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -300,12 +286,12 @@ if uploaded_file:
         tmp_path = tmp.name
 
     def extract_text(path, ext):
+        """Extracts text from different file types (PDF, DOCX, TXT)."""
         text = ""
         if ext == "pdf":
             reader = PdfReader(path)
             total_pages = len(reader.pages)
             
-            # Create progress placeholders outside the loop
             if show_progress:
                 progress_bar = st.progress(0)
                 status_text = st.empty()
@@ -313,13 +299,11 @@ if uploaded_file:
             for i, page in enumerate(reader.pages):
                 text += f"\n[Page {i+1}]\n" + page.extract_text()
                 
-                # Update progress in the same line
                 if show_progress:
                     progress_percentage = (i + 1) / total_pages
                     progress_bar.progress(progress_percentage)
                     status_text.text(f"📖 Processing page {i+1} of {total_pages} ({int(progress_percentage * 100)}%)")
             
-            # Clean up progress indicators
             if show_progress:
                 progress_bar.empty()
                 status_text.empty()
@@ -328,7 +312,6 @@ if uploaded_file:
             doc = DocxDocument(path)
             total_paragraphs = len(doc.paragraphs)
             
-            # Create progress placeholders outside the loop
             if show_progress:
                 progress_bar = st.progress(0)
                 status_text = st.empty()
@@ -336,13 +319,11 @@ if uploaded_file:
             for i, para in enumerate(doc.paragraphs):
                 text += f"\n[Paragraph {i+1}]\n" + para.text
                 
-                # Update progress in the same line
                 if show_progress:
                     progress_percentage = (i + 1) / total_paragraphs
                     progress_bar.progress(progress_percentage)
                     status_text.text(f"📄 Processing paragraph {i+1} of {total_paragraphs} ({int(progress_percentage * 100)}%)")
             
-            # Clean up progress indicators
             if show_progress:
                 progress_bar.empty()
                 status_text.empty()
@@ -352,7 +333,6 @@ if uploaded_file:
                 lines = file.readlines()
                 total_lines = len(lines)
                 
-                # Create progress placeholders outside the loop
                 if show_progress:
                     progress_bar = st.progress(0)
                     status_text = st.empty()
@@ -360,13 +340,11 @@ if uploaded_file:
                 for i, line in enumerate(lines):
                     text += f"\n[Line {i+1}]\n" + line.strip()
                     
-                    # Update progress every 10 lines to avoid too frequent updates
                     if show_progress and (i + 1) % 10 == 0 or i == total_lines - 1:
                         progress_percentage = (i + 1) / total_lines
                         progress_bar.progress(progress_percentage)
                         status_text.text(f"📝 Processing line {i+1} of {total_lines} ({int(progress_percentage * 100)}%)")
                 
-                # Clean up progress indicators
                 if show_progress:
                     progress_bar.empty()
                     status_text.empty()
@@ -388,7 +366,7 @@ if uploaded_file:
                 st.text_area("Text Preview", text_data[:500] + "..." if len(text_data) > 500 else text_data, height=200)
 
 def clean_quiz_text(text):
-    """Clean the generated quiz text by removing unwanted symbols and fixing spacing"""
+    """Clean the generated quiz text by removing unwanted symbols and fixing spacing."""
     text = re.sub(r'\*+', '', text)
     text = re.sub(r'#+\s*', '', text)
     text = re.sub(r'_+', '', text)
@@ -484,7 +462,7 @@ Use clean text format. Clearly separate MCQ and True/False sections. Number ques
 
         with st.spinner("🤖 AI is crafting your personalized quiz..."):
             if show_progress:
-                show_progress("Generating quiz", 3)
+                show_progress_bar("Generating quiz", 3)
             
             response = model.generate_content(prompt)
             cleaned_text = clean_quiz_text(response.text)
@@ -506,7 +484,7 @@ if st.session_state.get("quiz_text"):
     st.markdown("---")
     st.markdown("### 📋 Your Generated Quiz")
     
-    # Tabs for better organization (removed Analysis tab)
+    # Tabs for better organization
     tab1, tab2 = st.tabs(["📖 Preview", "⬇️ Download"])
     
     with tab1:
@@ -518,6 +496,7 @@ if st.session_state.get("quiz_text"):
         st.markdown("### 📥 Download Your Quiz")
         
         def save_pdf(content, file_path):
+            """Saves quiz content to a PDF file."""
             styles = getSampleStyleSheet()
             doc = SimpleDocTemplate(file_path, pagesize=letter)
             lines = content.split('\n')
@@ -530,6 +509,7 @@ if st.session_state.get("quiz_text"):
             doc.build(story)
 
         def save_docx(content, file_path):
+            """Saves quiz content to a DOCX file."""
             doc = DocxWriter()
             lines = content.split('\n')
             for line in lines:
@@ -540,6 +520,7 @@ if st.session_state.get("quiz_text"):
             doc.save(file_path)
 
         def save_txt(content, file_path):
+            """Saves quiz content to a TXT file."""
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
@@ -574,4 +555,3 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
-
