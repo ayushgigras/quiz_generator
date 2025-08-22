@@ -108,6 +108,7 @@ def apply_theme_css():
         /* The main uploader dropzone and text */
         .st-emotion-cache-1g8w4t4 {{
             background-color: {button_bg} !important;
+            border-style: none !important;
         }}
         .st-emotion-cache-1g8w4t4 * {{
             color: {text_color} !important;
@@ -131,7 +132,7 @@ def apply_theme_css():
         .st-emotion-cache-1r65n2d * {{
             color: {text_color} !important;
         }}
-
+        
         /* Header with animation */
         .main-header {{
             font-size: 3rem;
@@ -147,12 +148,12 @@ def apply_theme_css():
         
         @keyframes glow {{
             from {{ filter: drop-shadow(0 0 5px rgba(78, 205, 196, 0.4)); }}
-            to {{ filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
+            to {{ filter: drop_shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
         }}
         
         /* File upload section */
-        .upload-section {{
-            border: 2px dashed {primary_color};
+        .file-uploader-container {{
+            border: none;
             border-radius: 20px;
             padding: 2rem;
             text-align: center;
@@ -161,7 +162,7 @@ def apply_theme_css():
             transition: all 0.3s ease;
         }}
         
-        .upload-section:hover {{
+        .file-uploader-container:hover {{
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }}
@@ -250,7 +251,7 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     # File upload section with enhanced styling
-    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+    st.markdown('<div class="file-uploader-container">', unsafe_allow_html=True)
     st.markdown("### 📁 Upload Your Document")
     st.markdown("*Supports PDF, DOCX, and TXT files*")
     
@@ -563,6 +564,6 @@ st.markdown(
         Made with ❤️ using Streamlit & Google Gemini AI<br>
         <small>Transform your documents into engaging quizzes instantly!</small>
     </div>
-    """, 
+    """,
     unsafe_allow_html=True
 )
