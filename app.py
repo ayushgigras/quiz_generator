@@ -2,7 +2,7 @@ import streamlit as st
 import tempfile
 import os
 import google.generativeai as genai
-from pypdf import PdfReader
+from pypypdf import PdfReader
 from docx import Document as DocxDocument
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -11,7 +11,6 @@ from docx import Document as DocxWriter
 from dotenv import load_dotenv
 import re
 import time
-import plotly.graph_objects as go
 from datetime import datetime
 
 # Load environment variables (like API key)
@@ -54,6 +53,7 @@ def apply_theme_css():
         sidebar_bg = "#2d2d2d"
         sidebar_text_color = "#ffffff"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        button_bg = "#3a3a3a"
     elif current_theme == "Colorful":
         primary_color = "#4ecdc4"
         bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
@@ -65,6 +65,7 @@ def apply_theme_css():
         sidebar_bg = "#f0f0f0"
         sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)"
+        button_bg = "#f0f0f0"
     else:  # Default
         primary_color = "#4ecdc4"
         bg_color = "#ffffff"
@@ -76,6 +77,7 @@ def apply_theme_css():
         sidebar_bg = "#f0f2f6"
         sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        button_bg = "#f0f2f6"
 
     st.markdown(f"""
     <style>
@@ -168,31 +170,28 @@ def apply_theme_css():
             padding: 2rem;
         }}
         
-        /* Ensure all text elements are visible */
-        .st-emotion-cache-1ae090d * {{
-            color: {text_color} !important;
+        /* Correcting color for specific Streamlit components */
+        .st-emotion-cache-1wq0z5r .st-emotion-cache-1r65n2d * {{
+            color: {sidebar_text_color} !important;
         }}
-        .st-emotion-cache-17z6k1z * {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-j7qwjs * {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-1p1f70 * {{
-             color: {text_color} !important;
-        }}
-        .st-emotion-cache-d14k0i * {{
-            color: {text_color} !important;
-        }}
-        
-        /* Custom styles for file uploader and its internal text */
-        .st-emotion-cache-1g8w4t4 {{
+        .st-emotion-cache-1629p2 * {{
             color: {text_color} !important;
         }}
         .st-emotion-cache-h5g1k5 p {{
             color: {text_color} !important;
         }}
         .st-emotion-cache-10n2u9v {{
+            color: {text_color} !important;
+        }}
+        .st-emotion-cache-q8s00j .st-emotion-cache-f1x2j2.e1b2p2x1 p {{
+            color: {text_color} !important;
+        }}
+
+        /* File uploader styling */
+        .st-emotion-cache-1g8w4t4 {{
+            background-color: {button_bg} !important;
+        }}
+        .st-emotion-cache-1g8w4t4 * {{
             color: {text_color} !important;
         }}
     </style>
