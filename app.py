@@ -2,7 +2,7 @@ import streamlit as st
 import tempfile
 import os
 import google.generativeai as genai
-from pypdf import PdfReader
+from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -43,33 +43,60 @@ def apply_theme_css():
     if current_theme == "Dark Mode":
         primary_color = "#bb86fc"
         bg_color = "#1e1e1e"
-        text_color = "#fff"
+        text_color = "#ffffff"
         card_bg = "#2d2d2d"
+        card_text_color = "#ffffff"
         gradient = "linear-gradient(135deg, rgba(187, 134, 252, 0.1), rgba(3, 218, 198, 0.1))"
         stats_gradient = "linear-gradient(135deg, #bb86fc 0%, #03dac6 100%)"
         sidebar_gradient = "linear-gradient(180deg, rgba(187, 134, 252, 0.1), rgba(45, 45, 45, 0.1))"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        upload_text_color = "#ffffff"
     elif current_theme == "Colorful":
         primary_color = "#4ecdc4"
         bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
-        text_color = "#000"
-        card_bg = "#f8f9fa"
-        gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(255, 107, 107, 0.1))"
+        text_color = "#000000"
+        card_bg = "#ffffff"
+        card_text_color = "#000000"
+        gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(255, 107, 107, 0.2))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
         sidebar_gradient = "linear-gradient(180deg, rgba(78, 205, 196, 0.1), rgba(255, 255, 255, 0.1))"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)"
+        upload_text_color = "#000000"
     else:  # Default
         primary_color = "#4ecdc4"
         bg_color = "#ffffff"
-        text_color = "#000"
-        card_bg = "#f8f9fa"
+        text_color = "#000000"
+        card_bg = "#ffffff"
+        card_text_color = "#000000"
         gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(255, 107, 107, 0.1))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
         sidebar_gradient = "linear-gradient(180deg, rgba(78, 205, 196, 0.1), rgba(255, 255, 255, 0.1))"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        upload_text_color = "#000000"
     
     st.markdown(f"""
     <style>
+        /* Force text visibility across all themes */
+        .stApp {{
+            background: {bg_color};
+            color: {text_color} !important;
+        }}
+        
+        /* Main content text */
+        .main .block-container {{
+            color: {text_color} !important;
+        }}
+        
+        /* Ensure all text elements are visible */
+        p, div, span, h1, h2, h3, h4, h5, h6 {{
+            color: {text_color} !important;
+        }}
+        
+        /* Streamlit specific text elements */
+        .stMarkdown, .stText {{
+            color: {text_color} !important;
+        }}
+        
         .main-header {{
             font-size: 3rem;
             font-weight: bold;
@@ -95,6 +122,11 @@ def apply_theme_css():
             background: {gradient};
             margin: 1rem 0;
             transition: all 0.3s ease;
+            color: {upload_text_color} !important;
+        }}
+        
+        .upload-section h3, .upload-section p, .upload-section * {{
+            color: {upload_text_color} !important;
         }}
         
         .upload-section:hover {{
@@ -104,7 +136,7 @@ def apply_theme_css():
         
         .stats-card {{
             background: {stats_gradient};
-            color: white;
+            color: white !important;
             padding: 1.5rem;
             border-radius: 15px;
             text-align: center;
@@ -119,11 +151,12 @@ def apply_theme_css():
             border-radius: 10px;
             margin: 1rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            color: {text_color};
+            color: {card_text_color} !important;
         }}
         
         .success-animation {{
             animation: bounce 1s infinite;
+            color: {text_color} !important;
         }}
         
         @keyframes bounce {{
@@ -136,10 +169,43 @@ def apply_theme_css():
             background: {sidebar_gradient};
             padding: 1rem;
             border-radius: 10px;
+            color: {text_color} !important;
         }}
         
-        .stApp {{
-            background: {bg_color};
+        /* File info section */
+        .stMetric {{
+            color: {text_color} !important;
+        }}
+        
+        .stMetric > div > div {{
+            color: {text_color} !important;
+        }}
+        
+        /* Form elements */
+        .stSelectbox label, .stNumberInput label, .stCheckbox label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Expander content */
+        .streamlit-expanderContent {{
+            color: {text_color} !important;
+        }}
+        
+        /* Footer */
+        .footer-text {{
+            color: #666 !important;
+            text-align: center;
+            padding: 2rem;
+        }}
+        
+        /* Strong emphasis on text visibility */
+        .main * {{
+            color: {text_color} !important;
+        }}
+        
+        /* Override any inherited transparent colors */
+        .main *:not(.main-header) {{
+            -webkit-text-fill-color: {text_color} !important;
         }}
     </style>
     """, unsafe_allow_html=True)
@@ -500,12 +566,11 @@ if st.session_state.get("quiz_text"):
 # Footer
 st.markdown("---")
 st.markdown(
-    """
-    <div style="text-align: center; color: #666; padding: 2rem;">
+    f"""
+    <div class="footer-text">
         Made with ❤️ using Streamlit & Google Gemini AI<br>
         <small>Transform your documents into engaging quizzes instantly!</small>
     </div>
     """, 
     unsafe_allow_html=True
-
 )
