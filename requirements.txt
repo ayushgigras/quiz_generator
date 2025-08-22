@@ -1,5 +1,7 @@
-streamlit
-python-dotenv
-google-generativeai
-unstructured[all-docs]
-plotly>=5.0.0
+streamlit>=1.28.0
+google-generativeai>=0.3.0
+pypdf>=3.17.0
+python-docx>=0.8.11
+reportlab>=4.0.4
+python-dotenv>=1.0.0
+plotly>=5.17.0
