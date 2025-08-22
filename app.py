@@ -98,9 +98,56 @@ def apply_theme_css():
             color: {sidebar_text_color} !important;
         }}
 
-        /* Header and top-right icons */
+        /* Header and top-right icons - Fixed visibility */
         .st-emotion-cache-1d4k1o {{
             color: {text_color} !important;
+        }}
+        
+        /* Top header bar with GitHub fork button, settings, etc. */
+        header[data-testid="stHeader"] {{
+            background-color: transparent !important;
+        }}
+        
+        /* Fork button and header icons */
+        header[data-testid="stHeader"] button,
+        header[data-testid="stHeader"] a,
+        header[data-testid="stHeader"] svg {{
+            color: {text_color} !important;
+            fill: {text_color} !important;
+        }}
+        
+        /* Settings button (three dots) */
+        button[kind="header"] {{
+            color: {text_color} !important;
+        }}
+        
+        button[kind="header"] svg {{
+            fill: {text_color} !important;
+            stroke: {text_color} !important;
+        }}
+        
+        /* GitHub fork button */
+        .stActionButton button {{
+            color: {text_color} !important;
+            background-color: transparent !important;
+        }}
+        
+        .stActionButton svg {{
+            fill: {text_color} !important;
+        }}
+        
+        /* All header toolbar buttons */
+        .stToolbar button {{
+            color: {text_color} !important;
+        }}
+        
+        .stToolbar svg {{
+            fill: {text_color} !important;
+        }}
+        
+        /* Header button hover effects */
+        header[data-testid="stHeader"] button:hover {{
+            background-color: rgba(255,255,255,0.1) !important;
         }}
 
         /* File uploader styling - Fixed for better visibility */
