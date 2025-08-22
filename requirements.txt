@@ -1,0 +1,5 @@
+streamlit
+python-dotenv
+google-generativeai
+unstructured[all-docs]
+plotly>=5.0.0
