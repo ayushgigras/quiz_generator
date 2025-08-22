@@ -48,36 +48,39 @@ def apply_theme_css():
         text_color = "#ffffff"
         card_bg = "#2d2d2d"
         card_text_color = "#ffffff"
-        gradient = "linear-gradient(135deg, rgba(187, 134, 252, 0.1), rgba(3, 218, 198, 0.1))"
         stats_gradient = "linear-gradient(135deg, #bb86fc 0%, #03dac6 100%)"
         sidebar_bg = "#2d2d2d"
         sidebar_text_color = "#ffffff"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
-        button_bg = "#3a3a3a"
+        button_bg = "#bb86fc"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(187, 134, 252, 0.1)"
     elif current_theme == "Colorful":
         primary_color = "#4ecdc4"
         bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
         text_color = "#000000"
         card_bg = "#ffffff"
         card_text_color = "#000000"
-        gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(255, 107, 107, 0.2))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
         sidebar_bg = "#f0f0f0"
         sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)"
-        button_bg = "#f0f0f0"
+        button_bg = "#4ecdc4"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(78, 205, 196, 0.1)"
     else:  # Default
         primary_color = "#4ecdc4"
         bg_color = "#ffffff"
         text_color = "#000000"
         card_bg = "#ffffff"
         card_text_color = "#000000"
-        gradient = "linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(255, 107, 107, 0.1))"
         stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
         sidebar_bg = "#f0f2f6"
         sidebar_text_color = "#000000"
         header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
-        button_bg = "#f0f2f6"
+        button_bg = "#4ecdc4"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(78, 205, 196, 0.1)"
 
     st.markdown(f"""
     <style>
@@ -100,36 +103,38 @@ def apply_theme_css():
             color: {text_color} !important;
         }}
 
-        /* File uploader button text and icon */
-        .st-emotion-cache-d86k8t, .st-emotion-cache-d86k8t * {{
+        /* File uploader styling - Fixed for better visibility */
+        .stFileUploader > div > div {{
+            background-color: transparent !important;
+            border: 2px dashed {primary_color} !important;
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }}
+        
+        /* File uploader text */
+        .stFileUploader label {{
             color: {text_color} !important;
         }}
         
-        /* The main uploader dropzone and text */
-        .st-emotion-cache-1g8w4t4 {{
+        /* Browse files button - Enhanced visibility */
+        .stFileUploader button {{
             background-color: {button_bg} !important;
-            border-style: none !important;
+            color: {button_text_color} !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 1rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
         }}
-        .st-emotion-cache-1g8w4t4 * {{
-            color: {text_color} !important;
+        
+        .stFileUploader button:hover {{
+            background-color: {primary_color} !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
         }}
-        /* The 'Drag and drop' text */
-        .st-emotion-cache-1o0x8a9 p {{
-            color: {text_color} !important;
-        }}
-        /* The 'Browse files' button itself */
-        .st-emotion-cache-1e53m12.e1b2p2x1 {{
-            background-color: {button_bg} !important;
-        }}
-        .st-emotion-cache-1e53m12.e1b2p2x1 * {{
-            color: {text_color} !important;
-        }}
-        /* This is a general class for the button text, adding it for broad compatibility */
-        .st-emotion-cache-h5g1k5 p {{
-            color: {text_color} !important;
-        }}
-        /* The upload icon */
-        .st-emotion-cache-1r65n2d * {{
+        
+        /* Drag and drop text */
+        .stFileUploader small {{
             color: {text_color} !important;
         }}
         
@@ -148,16 +153,16 @@ def apply_theme_css():
         
         @keyframes glow {{
             from {{ filter: drop-shadow(0 0 5px rgba(78, 205, 196, 0.4)); }}
-            to {{ filter: drop_shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
+            to {{ filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
         }}
         
-        /* File upload section */
+        /* File upload section - Removed box styling */
         .file-uploader-container {{
             border: none;
             border-radius: 20px;
             padding: 2rem;
             text-align: center;
-            background: {gradient};
+            background: {upload_bg};
             margin: 1rem 0;
             transition: all 0.3s ease;
         }}
@@ -250,8 +255,7 @@ with st.sidebar:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    # File upload section with enhanced styling
-    st.markdown('<div class="file-uploader-container">', unsafe_allow_html=True)
+    # File upload section with enhanced styling - Removed the container div
     st.markdown("### 📁 Upload Your Document")
     st.markdown("*Supports PDF, DOCX, and TXT files*")
     
@@ -260,7 +264,6 @@ with col1:
         type=["pdf", "docx", "txt"],
         help="Upload a document to generate quiz questions from"
     )
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     # File info display
