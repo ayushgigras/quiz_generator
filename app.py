@@ -95,6 +95,43 @@ def apply_theme_css():
             color: {sidebar_text_color} !important;
         }}
 
+        /* Header and top-right icons */
+        .st-emotion-cache-1d4k1o {{
+            color: {text_color} !important;
+        }}
+
+        /* File uploader button text and icon */
+        .st-emotion-cache-d86k8t, .st-emotion-cache-d86k8t * {{
+            color: {text_color} !important;
+        }}
+        
+        /* The main uploader dropzone and text */
+        .st-emotion-cache-1g8w4t4 {{
+            background-color: {button_bg} !important;
+        }}
+        .st-emotion-cache-1g8w4t4 * {{
+            color: {text_color} !important;
+        }}
+        /* The 'Drag and drop' text */
+        .st-emotion-cache-1o0x8a9 p {{
+            color: {text_color} !important;
+        }}
+        /* The 'Browse files' button itself */
+        .st-emotion-cache-1e53m12.e1b2p2x1 {{
+            background-color: {button_bg} !important;
+        }}
+        .st-emotion-cache-1e53m12.e1b2p2x1 * {{
+            color: {text_color} !important;
+        }}
+        /* This is a general class for the button text, adding it for broad compatibility */
+        .st-emotion-cache-h5g1k5 p {{
+            color: {text_color} !important;
+        }}
+        /* The upload icon */
+        .st-emotion-cache-1r65n2d * {{
+            color: {text_color} !important;
+        }}
+
         /* Header with animation */
         .main-header {{
             font-size: 3rem;
@@ -168,34 +205,6 @@ def apply_theme_css():
             color: #666;
             text-align: center;
             padding: 2rem;
-        }}
-        
-        /* Correcting color for specific Streamlit components */
-        .st-emotion-cache-1wq0z5r .st-emotion-cache-1r65n2d * {{
-            color: {sidebar_text_color} !important;
-        }}
-        .st-emotion-cache-1629p2 * {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-h5g1k5 p {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-10n2u9v {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-q8s00j .st-emotion-cache-f1x2j2.e1b2p2x1 p {{
-            color: {text_color} !important;
-        }}
-        .st-emotion-cache-q8s00j .st-emotion-cache-f1x2j2.e1b2p2x1 {{
-            color: {text_color} !important;
-        }}
-
-        /* File uploader styling */
-        .st-emotion-cache-1g8w4t4 > div {{
-            background-color: {button_bg} !important;
-        }}
-        .st-emotion-cache-1g8w4t4 * {{
-            color: {text_color} !important;
         }}
     </style>
     """, unsafe_allow_html=True)
