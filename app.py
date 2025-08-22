@@ -98,51 +98,46 @@ def apply_theme_css():
             color: {sidebar_text_color} !important;
         }}
 
-        /* Header and top-right icons - Fixed visibility */
-        .st-emotion-cache-1d4k1o {{
-            color: {text_color} !important;
-        }}
-        
-        /* Top header bar with GitHub fork button, settings, etc. */
+        /* Keep header black with white text/icons */
         header[data-testid="stHeader"] {{
-            background-color: transparent !important;
+            background-color: #1e1e1e !important;
         }}
         
-        /* Fork button and header icons */
+        /* Fork button and header icons - Always white */
         header[data-testid="stHeader"] button,
         header[data-testid="stHeader"] a,
         header[data-testid="stHeader"] svg {{
-            color: {text_color} !important;
-            fill: {text_color} !important;
+            color: #ffffff !important;
+            fill: #ffffff !important;
         }}
         
-        /* Settings button (three dots) */
+        /* Settings button (three dots) - Always white */
         button[kind="header"] {{
-            color: {text_color} !important;
+            color: #ffffff !important;
         }}
         
         button[kind="header"] svg {{
-            fill: {text_color} !important;
-            stroke: {text_color} !important;
+            fill: #ffffff !important;
+            stroke: #ffffff !important;
         }}
         
-        /* GitHub fork button */
+        /* GitHub fork button - Always white */
         .stActionButton button {{
-            color: {text_color} !important;
+            color: #ffffff !important;
             background-color: transparent !important;
         }}
         
         .stActionButton svg {{
-            fill: {text_color} !important;
+            fill: #ffffff !important;
         }}
         
-        /* All header toolbar buttons */
+        /* All header toolbar buttons - Always white */
         .stToolbar button {{
-            color: {text_color} !important;
+            color: #ffffff !important;
         }}
         
         .stToolbar svg {{
-            fill: {text_color} !important;
+            fill: #ffffff !important;
         }}
         
         /* Header button hover effects */
