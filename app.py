@@ -2,7 +2,7 @@ import streamlit as st
 import tempfile
 import os
 import google.generativeai as genai
-from pypypdf import PdfReader
+from pypdf import PdfReader
 from docx import Document as DocxDocument
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -554,3 +554,4 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
+
