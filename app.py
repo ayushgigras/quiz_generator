@@ -186,9 +186,12 @@ def apply_theme_css():
         .st-emotion-cache-q8s00j .st-emotion-cache-f1x2j2.e1b2p2x1 p {{
             color: {text_color} !important;
         }}
+        .st-emotion-cache-q8s00j .st-emotion-cache-f1x2j2.e1b2p2x1 {{
+            color: {text_color} !important;
+        }}
 
         /* File uploader styling */
-        .st-emotion-cache-1g8w4t4 {{
+        .st-emotion-cache-1g8w4t4 > div {{
             background-color: {button_bg} !important;
         }}
         .st-emotion-cache-1g8w4t4 * {{
@@ -554,4 +557,3 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
-
