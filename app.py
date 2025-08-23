@@ -195,6 +195,19 @@ def apply_theme_css():
             background-color: {button_bg} !important;
         }}
         
+        /* Fix tab text visibility */
+        .stTabs [data-baseweb="tab-list"] button {{
+            color: {text_color} !important;
+        }}
+        
+        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
+            color: {primary_color} !important;
+        }}
+        
+        .stTabs [data-baseweb="tab"] {{
+            color: {text_color} !important;
+        }}
+        
         /* Fix selectbox */
         .stSelectbox select {{
             color: {text_color} !important;
