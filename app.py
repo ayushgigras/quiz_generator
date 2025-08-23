@@ -55,6 +55,9 @@ def apply_theme_css():
         button_bg = "#bb86fc"
         button_text_color = "#ffffff"
         upload_bg = "rgba(187, 134, 252, 0.1)"
+        metric_text_color = "#ffffff"
+        expander_bg = "#2d2d2d"
+        expander_text_color = "#ffffff"
     elif current_theme == "Colorful":
         primary_color = "#4ecdc4"
         bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
@@ -68,6 +71,9 @@ def apply_theme_css():
         button_bg = "#4ecdc4"
         button_text_color = "#ffffff"
         upload_bg = "rgba(78, 205, 196, 0.1)"
+        metric_text_color = "#000000"
+        expander_bg = "#ffffff"
+        expander_text_color = "#000000"
     else:  # Default
         primary_color = "#4ecdc4"
         bg_color = "#ffffff"
@@ -81,6 +87,9 @@ def apply_theme_css():
         button_bg = "#4ecdc4"
         button_text_color = "#ffffff"
         upload_bg = "rgba(78, 205, 196, 0.1)"
+        metric_text_color = "#000000"
+        expander_bg = "#f8f9fa"
+        expander_text_color = "#000000"
 
     st.markdown(f"""
     <style>
@@ -174,10 +183,11 @@ def apply_theme_css():
             border: none !important;
         }}
         
-        /* Fix text area in quiz preview */
+        /* Fix text area in quiz preview - FIXED */
         .stTextArea textarea {{
             color: {card_text_color} !important;
             background-color: {card_bg} !important;
+            border: 1px solid {primary_color} !important;
         }}
         
         /* Fix text area label */
@@ -232,13 +242,70 @@ def apply_theme_css():
             color: {card_text_color} !important;
         }}
         
-        /* Fix metric values in sidebar */
+        /* Fix metric values in sidebar - FIXED */
+        .stMetric {{
+            background-color: transparent !important;
+        }}
+        
         .stMetric label {{
-            color: {sidebar_text_color} !important;
+            color: {metric_text_color} !important;
+            font-weight: 600 !important;
+        }}
+        
+        .stMetric [data-testid="metric-value"] {{
+            color: {metric_text_color} !important;
+            font-weight: bold !important;
         }}
         
         .stMetric .metric-value {{
-            color: {sidebar_text_color} !important;
+            color: {metric_text_color} !important;
+            font-weight: bold !important;
+        }}
+        
+        /* Additional metric styling to ensure visibility */
+        div[data-testid="metric-container"] {{
+            background-color: transparent !important;
+        }}
+        
+        div[data-testid="metric-container"] > div {{
+            color: {metric_text_color} !important;
+        }}
+        
+        div[data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+
+        /* Fix expander (Preview Extracted Text) - FIXED */
+        .stExpander {{
+            background-color: {expander_bg} !important;
+            border: 1px solid {primary_color} !important;
+            border-radius: 8px !important;
+        }}
+        
+        .stExpander > div > div {{
+            background-color: {expander_bg} !important;
+        }}
+        
+        .stExpander summary {{
+            background-color: {expander_bg} !important;
+            color: {expander_text_color} !important;
+            font-weight: 600 !important;
+        }}
+        
+        .stExpander [data-testid="stExpanderDetails"] {{
+            background-color: {expander_bg} !important;
+            color: {expander_text_color} !important;
+        }}
+        
+        /* Fix expander content text area */
+        .stExpander .stTextArea textarea {{
+            color: {expander_text_color} !important;
+            background-color: {expander_bg} !important;
+            border: 1px solid {primary_color} !important;
+        }}
+        
+        .stExpander .stTextArea label {{
+            color: {expander_text_color} !important;
         }}
 
         /* File uploader styling - Fixed for better visibility */
@@ -516,7 +583,7 @@ if uploaded_file:
             
             # Show text preview
             with st.expander("👀 Preview Extracted Text"):
-                st.text_area("Text Preview", text_data[:500] + "..." if len(text_data) > 500 else text_data, height=200)
+                st.text_area("Text Preview", text_data[:500] + "..." if len(text_data) > 500 else text_data, height=200, key="text_preview")
 
 def clean_quiz_text(text):
     """Clean the generated quiz text by removing unwanted symbols and fixing spacing."""
@@ -669,7 +736,7 @@ if st.session_state.get("quiz_text"):
     
     with tab1:
         st.markdown('<div class="quiz-preview">', unsafe_allow_html=True)
-        st.text_area("Generated Quiz:", value=st.session_state.quiz_text, height=400)
+        st.text_area("Generated Quiz:", value=st.session_state.quiz_text, height=400, key="quiz_preview")
         st.markdown('</div>', unsafe_allow_html=True)
     
     with tab2:
