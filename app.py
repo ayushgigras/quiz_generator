@@ -242,36 +242,80 @@ def apply_theme_css():
             color: {card_text_color} !important;
         }}
         
-        /* Fix metric values in sidebar - FIXED */
-        .stMetric {{
+        /* AGGRESSIVE METRIC FIXES - Multiple approaches */
+        
+        /* Force all metric elements to be visible */
+        [data-testid="metric-container"] {{
+            color: {metric_text_color} !important;
             background-color: transparent !important;
         }}
         
-        .stMetric label {{
+        [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Target metric labels */
+        [data-testid="metric-container"] label,
+        [data-testid="metric-container"] .metric-label {{
             color: {metric_text_color} !important;
             font-weight: 600 !important;
         }}
         
-        .stMetric [data-testid="metric-value"] {{
+        /* Target metric values */
+        [data-testid="metric-container"] [data-testid="metric-value"],
+        [data-testid="metric-container"] .metric-value {{
             color: {metric_text_color} !important;
             font-weight: bold !important;
+            font-size: 1.875rem !important;
         }}
         
-        .stMetric .metric-value {{
-            color: {metric_text_color} !important;
-            font-weight: bold !important;
-        }}
-        
-        /* Additional metric styling to ensure visibility */
-        div[data-testid="metric-container"] {{
-            background-color: transparent !important;
-        }}
-        
-        div[data-testid="metric-container"] > div {{
+        /* Streamlit metric component - all variations */
+        .stMetric,
+        div[data-testid="metric-container"],
+        .element-container .stMetric {{
             color: {metric_text_color} !important;
         }}
         
-        div[data-testid="metric-container"] * {{
+        .stMetric *,
+        div[data-testid="metric-container"] *,
+        .element-container .stMetric * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Target common CSS classes Streamlit uses */
+        .st-emotion-cache-1wq0z5r [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Universal metric selector - nuclear option */
+        div:has([data-testid="metric-value"]) {{
+            color: {metric_text_color} !important;
+        }}
+        
+        div:has([data-testid="metric-value"]) * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Text elements specifically */
+        [data-testid="metric-container"] span,
+        [data-testid="metric-container"] p,
+        [data-testid="metric-container"] div,
+        [data-testid="metric-container"] text {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Sidebar specific metrics */
+        .stSidebar [data-testid="metric-container"],
+        .stSidebar [data-testid="metric-container"] *,
+        section[data-testid="stSidebar"] [data-testid="metric-container"],
+        section[data-testid="stSidebar"] [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Force color on any element inside metric containers */
+        [data-testid="metric-container"] > * > *,
+        [data-testid="metric-container"] > * > * > *,
+        [data-testid="metric-container"] > * > * > * > * {{
             color: {metric_text_color} !important;
         }}
 
@@ -430,12 +474,52 @@ st.markdown('<h1 class="main-header">🧠 AI Quiz Generator Pro</h1>', unsafe_al
 with st.sidebar:
     st.markdown("### 📊 Dashboard")
     
-    # Statistics
+    # Get theme colors for custom metrics
+    current_theme = st.session_state.get('theme', 'Default')
+    if current_theme == "Dark Mode":
+        metric_color = "#ffffff"
+        metric_bg = "#2d2d2d"
+    else:  # Default and Colorful
+        metric_color = "#000000" 
+        metric_bg = "#f8f9fa"
+    
+    # Custom styled metrics using HTML instead of st.metric
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Total Quizzes", len(st.session_state.quiz_history))
+        st.markdown(f"""
+        <div style="
+            background-color: {metric_bg};
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #4ecdc4;
+        ">
+            <div style="color: {metric_color}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
+                Total Quizzes
+            </div>
+            <div style="color: {metric_color}; font-size: 1.875rem; font-weight: bold; line-height: 1;">
+                {len(st.session_state.quiz_history)}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
     with col2:
-        st.metric("Questions Generated", st.session_state.total_questions_generated)
+        st.markdown(f"""
+        <div style="
+            background-color: {metric_bg};
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #4ecdc4;
+        ">
+            <div style="color: {metric_color}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
+                Questions Generated
+            </div>
+            <div style="color: {metric_color}; font-size: 1.875rem; font-weight: bold; line-height: 1;">
+                {st.session_state.total_questions_generated}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Quiz history
     if st.session_state.quiz_history:
