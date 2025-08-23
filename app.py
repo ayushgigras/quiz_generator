@@ -180,6 +180,21 @@ def apply_theme_css():
             background-color: {card_bg} !important;
         }}
         
+        /* Fix text area label */
+        .stTextArea label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix download buttons text visibility */
+        .stDownloadButton button {{
+            color: white !important;
+            background-color: {primary_color} !important;
+        }}
+        
+        .stDownloadButton button:hover {{
+            background-color: {button_bg} !important;
+        }}
+        
         /* Fix selectbox */
         .stSelectbox select {{
             color: {text_color} !important;
