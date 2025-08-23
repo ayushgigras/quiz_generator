@@ -144,6 +144,52 @@ def apply_theme_css():
         header[data-testid="stHeader"] button:hover {{
             background-color: rgba(255,255,255,0.1) !important;
         }}
+        
+        /* Fix form elements visibility */
+        .stNumberInput input {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+        }}
+        
+        .stNumberInput label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix preset buttons text visibility */
+        .stButton button {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+            border: 1px solid {primary_color} !important;
+        }}
+        
+        .stButton button:hover {{
+            background-color: {primary_color} !important;
+            color: white !important;
+        }}
+        
+        /* Fix form submit button */
+        .stButton button[kind="primary"] {{
+            background-color: {primary_color} !important;
+            color: white !important;
+            border: none !important;
+        }}
+        
+        /* Fix text area in quiz preview */
+        .stTextArea textarea {{
+            color: {card_text_color} !important;
+            background-color: {card_bg} !important;
+        }}
+        
+        /* Fix selectbox */
+        .stSelectbox select {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+        }}
+        
+        /* Fix checkbox */
+        .stCheckbox label {{
+            color: {text_color} !important;
+        }}
 
         /* File uploader styling - Fixed for better visibility */
         .stFileUploader > div > div {{
