@@ -551,6 +551,17 @@ if st.session_state.get("show_quiz_button"):
             st.session_state.preset = "comprehensive"
     
     with st.form("quiz_form"):
+        # Custom prompt section
+        st.markdown("**🎨 Custom Instructions (Optional)**")
+        custom_prompt = st.text_area(
+            "Add specific instructions for your quiz",
+            placeholder="Example: Include numerical problems for physics, focus on definitions for biology, add code examples for programming topics, etc.",
+            height=100,
+            help="Provide specific instructions about what type of questions you want based on your document content"
+        )
+        
+        st.markdown("---")
+        
         # Set default values based on preset
         if st.session_state.get("preset") == "quick":
             default_values = {"easy_mcq": 2, "medium_mcq": 1, "hard_mcq": 0, "easy_tf": 2, "medium_tf": 0, "hard_tf": 0}
@@ -581,7 +592,8 @@ if st.session_state.get("show_quiz_button"):
         submit_btn = st.form_submit_button("🚀 Generate Quiz", type="primary", use_container_width=True)
 
     if submit_btn and total_questions > 0:
-        prompt = f"""
+        # Build the base prompt
+        base_prompt = f"""
 You are an expert education assistant. Based on the following text:
 {st.session_state.text_data}
 
@@ -596,7 +608,20 @@ TRUE/FALSE QUESTIONS:
 - {easy_tf} Easy True/False questions
 - {medium_tf} Medium True/False questions
 - {hard_tf} Hard True/False questions
+"""
 
+        # Add custom instructions if provided
+        if custom_prompt.strip():
+            instruction_prompt = f"""
+SPECIAL INSTRUCTIONS:
+{custom_prompt.strip()}
+
+Please incorporate these specific requirements while generating the questions.
+"""
+            base_prompt += instruction_prompt
+
+        # Add the format requirements
+        format_prompt = """
 For EACH MCQ question, provide:
 1. Question number and full question
 2. Four options (A, B, C, D)
@@ -612,12 +637,14 @@ For EACH True/False question, provide:
 
 Use clean text format. Clearly separate MCQ and True/False sections. Number questions continuously.
 """
+        
+        final_prompt = base_prompt + format_prompt
 
         with st.spinner("🤖 AI is crafting your personalized quiz..."):
             if show_progress:
                 show_progress_bar("Generating quiz", 3)
             
-            response = model.generate_content(prompt)
+            response = model.generate_content(final_prompt)
             cleaned_text = clean_quiz_text(response.text)
             st.session_state.quiz_text = cleaned_text
             
