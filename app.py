@@ -190,6 +190,28 @@ def apply_theme_css():
         .stCheckbox label {{
             color: {text_color} !important;
         }}
+        
+        /* Fix info box (Total Questions display) */
+        .stAlert {{
+            background-color: {card_bg} !important;
+        }}
+        
+        .stAlert > div {{
+            color: {card_text_color} !important;
+        }}
+        
+        .stAlert p {{
+            color: {card_text_color} !important;
+        }}
+        
+        /* Fix metric values in sidebar */
+        .stMetric label {{
+            color: {sidebar_text_color} !important;
+        }}
+        
+        .stMetric .metric-value {{
+            color: {sidebar_text_color} !important;
+        }}
 
         /* File uploader styling - Fixed for better visibility */
         .stFileUploader > div > div {{
