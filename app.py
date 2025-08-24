@@ -59,13 +59,46 @@ def apply_theme():
     
     st.markdown(f"""
     <style>
-        .stApp {{ background: {theme['bg']}; color: {theme['text']}; }}
+        /* Global app styling - Force text color everywhere */
+        .stApp {{ background: {theme['bg']}; color: {theme['text']} !important; }}
+        
+        /* Universal text color enforcement */
+        .stApp *, .stApp p, .stApp span, .stApp div, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Markdown text */
+        .stMarkdown, .stMarkdown *, .stMarkdown p, .stMarkdown span {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Form labels and text */
+        .stNumberInput label, .stTextArea label, .stSelectbox label, .stFileUploader label, .stCheckbox label {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Info boxes and alerts */
+        .stInfo, .stInfo *, .stSuccess, .stSuccess *, .stWarning, .stWarning *, .stError, .stError * {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Expander content */
+        .stExpander, .stExpander *, .stExpander summary, .stExpander [data-testid="stExpanderDetails"] {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Tab content */
+        .stTabs [data-baseweb="tab-panel"] {{
+            color: {theme['text']} !important;
+        }}
         
         /* Sidebar */
         .st-emotion-cache-1wq0z5r, .st-emotion-cache-1wq0z5r > div {{ 
             background-color: {theme['sidebar_bg']} !important; 
         }}
-        .st-emotion-cache-1wq0z5r * {{ color: {theme['text']} !important; }}
+        .st-emotion-cache-1wq0z5r *, .st-emotion-cache-1wq0z5r p, .st-emotion-cache-1wq0z5r span, .st-emotion-cache-1wq0z5r div, .st-emotion-cache-1wq0z5r label {{
+            color: {theme['text']} !important;
+        }}
         
         /* Header - Always black with white text */
         header[data-testid="stHeader"] {{ background-color: #1e1e1e !important; }}
@@ -86,6 +119,11 @@ def apply_theme():
         .stButton button:hover {{ background-color: {theme['primary']} !important; color: white !important; }}
         .stButton button[kind="primary"] {{ background-color: {theme['primary']} !important; color: white !important; }}
         
+        /* Download buttons */
+        .stDownloadButton button {{
+            background-color: {theme['primary']} !important; color: white !important;
+        }}
+        
         /* File uploader */
         .stFileUploader > div > div {{ 
             background-color: transparent !important; border: 2px dashed {theme['primary']} !important;
@@ -94,6 +132,17 @@ def apply_theme():
         .stFileUploader button {{ 
             background-color: {theme['button_bg']} !important; color: white !important;
             border: none !important; border-radius: 8px !important;
+        }}
+        .stFileUploader label, .stFileUploader small {{
+            color: {theme['text']} !important;
+        }}
+        
+        /* Tabs */
+        .stTabs [data-baseweb="tab-list"] button {{
+            color: {theme['text']} !important;
+        }}
+        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
+            color: {theme['primary']} !important;
         }}
         
         /* Animations */
@@ -112,7 +161,11 @@ def apply_theme():
         .quiz-preview {{
             background: {theme['card_bg']}; border-left: 5px solid {theme['primary']};
             padding: 1.5rem; border-radius: 10px; margin: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: {theme['text']};
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: {theme['text']} !important;
+        }}
+        
+        .quiz-preview * {{
+            color: {theme['text']} !important;
         }}
     </style>
     """, unsafe_allow_html=True)
