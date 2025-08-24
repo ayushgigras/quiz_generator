@@ -6,6 +6,12 @@ A powerful Streamlit web application that transforms your documents into engagin
 ![Streamlit](https://img.shields.io/badge/streamlit-v1.28+-red.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
+## 🌐 Live Demo
+
+**[Try the App Now!](https://ai-quiz-generator-pro.streamlit.app/)** 🚀
+
+No installation required - just visit the link and start generating quizzes from your documents!
+
 ## ✨ Features
 
 - **📁 Multi-format Support**: Upload PDF, DOCX, and TXT files
@@ -19,12 +25,21 @@ A powerful Streamlit web application that transforms your documents into engagin
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Use the Live Web App (Recommended)
+**[🌐 Launch AI Quiz Generator Pro](https://ai-quiz-generator-pro.streamlit.app/)**
+
+Simply visit the web app - no installation needed! Just upload your document and start generating quizzes.
+
+### Option 2: Run Locally
+
+#### Prerequisites
+
+#### Prerequisites
 
 - Python 3.8 or higher
 - Google Gemini API key
 
-### Installation
+#### Installation
 
 1. **Clone the repository**
    ```bash
