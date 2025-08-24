@@ -13,10 +13,10 @@ import re
 import time
 from datetime import datetime
 
-# Load environment variables
+# Load environment variables (like API key)
 load_dotenv()
 
-# Page configuration
+# Page configuration with custom styling
 st.set_page_config(
     page_title="AI Quiz Generator Pro",
     page_icon="🧠",
@@ -24,133 +24,380 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
-for key, default in {
-    'quiz_history': [],
-    'total_questions_generated': 0,
-    'theme': "Default"
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+# Initialize session state variables
+if 'quiz_history' not in st.session_state:
+    st.session_state.quiz_history = []
+if 'total_questions_generated' not in st.session_state:
+    st.session_state.total_questions_generated = 0
+if 'theme' not in st.session_state:
+    st.session_state.theme = "Default"
 
-# Configure Gemini AI
+# Configure the Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Theme configurations
-THEMES = {
-    "Default": {
-        "primary": "#4ecdc4", "bg": "#ffffff", "text": "#000000", "card_bg": "#ffffff",
-        "sidebar_bg": "#f0f2f6", "button_bg": "#4ecdc4"
-    },
-    "Dark Mode": {
-        "primary": "#bb86fc", "bg": "#1e1e1e", "text": "#ffffff", "card_bg": "#2d2d2d",
-        "sidebar_bg": "#2d2d2d", "button_bg": "#bb86fc"
-    },
-    "Colorful": {
-        "primary": "#4ecdc4", "bg": "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
-        "text": "#000000", "card_bg": "#ffffff", "sidebar_bg": "#f0f0f0", "button_bg": "#4ecdc4"
-    }
-}
-
-def apply_theme():
-    """Apply theme-based CSS styling"""
-    theme = THEMES[st.session_state.theme]
+# Function to apply theme-based CSS with improved targeting
+def apply_theme_css():
+    """Applies custom CSS for different themes, ensuring text is always visible."""
+    current_theme = st.session_state.get('theme', 'Default')
     
+    # Theme colors
+    if current_theme == "Dark Mode":
+        primary_color = "#bb86fc"
+        bg_color = "#1e1e1e"
+        text_color = "#ffffff"
+        card_bg = "#2d2d2d"
+        card_text_color = "#ffffff"
+        stats_gradient = "linear-gradient(135deg, #bb86fc 0%, #03dac6 100%)"
+        sidebar_bg = "#2d2d2d"
+        sidebar_text_color = "#ffffff"
+        header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        button_bg = "#bb86fc"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(187, 134, 252, 0.1)"
+        metric_text_color = "#ffffff"
+        expander_bg = "#2d2d2d"
+        expander_text_color = "#ffffff"
+    elif current_theme == "Colorful":
+        primary_color = "#4ecdc4"
+        bg_color = "linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)"
+        text_color = "#000000"
+        card_bg = "#ffffff"
+        card_text_color = "#000000"
+        stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        sidebar_bg = "#f0f0f0"
+        sidebar_text_color = "#000000"
+        header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)"
+        button_bg = "#4ecdc4"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(78, 205, 196, 0.1)"
+        metric_text_color = "#000000"
+        expander_bg = "#ffffff"
+        expander_text_color = "#000000"
+    else:  # Default
+        primary_color = "#4ecdc4"
+        bg_color = "#ffffff"
+        text_color = "#000000"
+        card_bg = "#ffffff"
+        card_text_color = "#000000"
+        stats_gradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        sidebar_bg = "#f0f2f6"
+        sidebar_text_color = "#000000"
+        header_gradient = "linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1)"
+        button_bg = "#4ecdc4"
+        button_text_color = "#ffffff"
+        upload_bg = "rgba(78, 205, 196, 0.1)"
+        metric_text_color = "#000000"
+        expander_bg = "#f8f9fa"
+        expander_text_color = "#000000"
+
     st.markdown(f"""
     <style>
-        /* Global app styling - Force text color everywhere */
-        .stApp {{ background: {theme['bg']}; color: {theme['text']} !important; }}
-        
-        /* Universal text color enforcement */
-        .stApp *, .stApp p, .stApp span, .stApp div, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
-            color: {theme['text']} !important;
+        /* Overall App Styling */
+        .stApp {{
+            background: {bg_color};
+            color: {text_color};
         }}
         
-        /* Markdown text */
-        .stMarkdown, .stMarkdown *, .stMarkdown p, .stMarkdown span {{
-            color: {theme['text']} !important;
+        /* Sidebar Styling */
+        .st-emotion-cache-1wq0z5r, .st-emotion-cache-1wq0z5r > div {{
+            background-color: {sidebar_bg} !important;
+        }}
+        .st-emotion-cache-1wq0z5r * {{
+            color: {sidebar_text_color} !important;
+        }}
+
+        /* Keep header black with white text/icons */
+        header[data-testid="stHeader"] {{
+            background-color: #1e1e1e !important;
         }}
         
-        /* Form labels and text */
-        .stNumberInput label, .stTextArea label, .stSelectbox label, .stFileUploader label, .stCheckbox label {{
-            color: {theme['text']} !important;
+        /* Fork button and header icons - Always white */
+        header[data-testid="stHeader"] button,
+        header[data-testid="stHeader"] a,
+        header[data-testid="stHeader"] svg {{
+            color: #ffffff !important;
+            fill: #ffffff !important;
         }}
         
-        /* Info boxes and alerts */
-        .stInfo, .stInfo *, .stSuccess, .stSuccess *, .stWarning, .stWarning *, .stError, .stError * {{
-            color: {theme['text']} !important;
+        /* Settings button (three dots) - Always white */
+        button[kind="header"] {{
+            color: #ffffff !important;
         }}
         
-        /* Expander content */
-        .stExpander, .stExpander *, .stExpander summary, .stExpander [data-testid="stExpanderDetails"] {{
-            color: {theme['text']} !important;
+        button[kind="header"] svg {{
+            fill: #ffffff !important;
+            stroke: #ffffff !important;
         }}
         
-        /* Tab content */
-        .stTabs [data-baseweb="tab-panel"] {{
-            color: {theme['text']} !important;
+        /* GitHub fork button - Always white */
+        .stActionButton button {{
+            color: #ffffff !important;
+            background-color: transparent !important;
         }}
         
-        /* Sidebar */
-        .st-emotion-cache-1wq0z5r, .st-emotion-cache-1wq0z5r > div {{ 
-            background-color: {theme['sidebar_bg']} !important; 
-        }}
-        .st-emotion-cache-1wq0z5r *, .st-emotion-cache-1wq0z5r p, .st-emotion-cache-1wq0z5r span, .st-emotion-cache-1wq0z5r div, .st-emotion-cache-1wq0z5r label {{
-            color: {theme['text']} !important;
+        .stActionButton svg {{
+            fill: #ffffff !important;
         }}
         
-        /* Header - Always black with white text */
-        header[data-testid="stHeader"] {{ background-color: #1e1e1e !important; }}
-        header[data-testid="stHeader"] *, header[data-testid="stHeader"] svg {{ 
-            color: #ffffff !important; fill: #ffffff !important; 
+        /* All header toolbar buttons - Always white */
+        .stToolbar button {{
+            color: #ffffff !important;
         }}
         
-        /* Form elements */
-        .stNumberInput input, .stTextArea textarea, .stSelectbox select {{
-            color: {theme['text']} !important; background-color: {theme['card_bg']} !important;
+        .stToolbar svg {{
+            fill: #ffffff !important;
         }}
         
-        /* Buttons */
-        .stButton button {{ 
-            color: {theme['text']} !important; background-color: {theme['card_bg']} !important;
-            border: 1px solid {theme['primary']} !important;
+        /* Header button hover effects */
+        header[data-testid="stHeader"] button:hover {{
+            background-color: rgba(255,255,255,0.1) !important;
         }}
-        .stButton button:hover {{ background-color: {theme['primary']} !important; color: white !important; }}
-        .stButton button[kind="primary"] {{ background-color: {theme['primary']} !important; color: white !important; }}
         
-        /* Download buttons */
+        /* Fix form elements visibility */
+        .stNumberInput input {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+        }}
+        
+        .stNumberInput label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix preset buttons text visibility */
+        .stButton button {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+            border: 1px solid {primary_color} !important;
+        }}
+        
+        .stButton button:hover {{
+            background-color: {primary_color} !important;
+            color: white !important;
+        }}
+        
+        /* Fix form submit button */
+        .stButton button[kind="primary"] {{
+            background-color: {primary_color} !important;
+            color: white !important;
+            border: none !important;
+        }}
+        
+        /* Fix text area in quiz preview - FIXED */
+        .stTextArea textarea {{
+            color: {card_text_color} !important;
+            background-color: {card_bg} !important;
+            border: 1px solid {primary_color} !important;
+        }}
+        
+        /* Fix text area label */
+        .stTextArea label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix download buttons text visibility */
         .stDownloadButton button {{
-            background-color: {theme['primary']} !important; color: white !important;
+            color: white !important;
+            background-color: {primary_color} !important;
         }}
         
-        /* File uploader */
-        .stFileUploader > div > div {{ 
-            background-color: transparent !important; border: 2px dashed {theme['primary']} !important;
-            border-radius: 15px !important; padding: 2rem !important;
-        }}
-        .stFileUploader button {{ 
-            background-color: {theme['button_bg']} !important; color: white !important;
-            border: none !important; border-radius: 8px !important;
-        }}
-        .stFileUploader label, .stFileUploader small {{
-            color: {theme['text']} !important;
+        .stDownloadButton button:hover {{
+            background-color: {button_bg} !important;
         }}
         
-        /* Tabs */
+        /* Fix tab text visibility */
         .stTabs [data-baseweb="tab-list"] button {{
-            color: {theme['text']} !important;
-        }}
-        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
-            color: {theme['primary']} !important;
+            color: {text_color} !important;
         }}
         
-        /* Animations */
+        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
+            color: {primary_color} !important;
+        }}
+        
+        .stTabs [data-baseweb="tab"] {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix selectbox */
+        .stSelectbox select {{
+            color: {text_color} !important;
+            background-color: {card_bg} !important;
+        }}
+        
+        /* Fix checkbox */
+        .stCheckbox label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Fix info box (Total Questions display) */
+        .stAlert {{
+            background-color: {card_bg} !important;
+        }}
+        
+        .stAlert > div {{
+            color: {card_text_color} !important;
+        }}
+        
+        .stAlert p {{
+            color: {card_text_color} !important;
+        }}
+        
+        /* AGGRESSIVE METRIC FIXES - Multiple approaches */
+        
+        /* Force all metric elements to be visible */
+        [data-testid="metric-container"] {{
+            color: {metric_text_color} !important;
+            background-color: transparent !important;
+        }}
+        
+        [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Target metric labels */
+        [data-testid="metric-container"] label,
+        [data-testid="metric-container"] .metric-label {{
+            color: {metric_text_color} !important;
+            font-weight: 600 !important;
+        }}
+        
+        /* Target metric values */
+        [data-testid="metric-container"] [data-testid="metric-value"],
+        [data-testid="metric-container"] .metric-value {{
+            color: {metric_text_color} !important;
+            font-weight: bold !important;
+            font-size: 1.875rem !important;
+        }}
+        
+        /* Streamlit metric component - all variations */
+        .stMetric,
+        div[data-testid="metric-container"],
+        .element-container .stMetric {{
+            color: {metric_text_color} !important;
+        }}
+        
+        .stMetric *,
+        div[data-testid="metric-container"] *,
+        .element-container .stMetric * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Target common CSS classes Streamlit uses */
+        .st-emotion-cache-1wq0z5r [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Universal metric selector - nuclear option */
+        div:has([data-testid="metric-value"]) {{
+            color: {metric_text_color} !important;
+        }}
+        
+        div:has([data-testid="metric-value"]) * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Text elements specifically */
+        [data-testid="metric-container"] span,
+        [data-testid="metric-container"] p,
+        [data-testid="metric-container"] div,
+        [data-testid="metric-container"] text {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Sidebar specific metrics */
+        .stSidebar [data-testid="metric-container"],
+        .stSidebar [data-testid="metric-container"] *,
+        section[data-testid="stSidebar"] [data-testid="metric-container"],
+        section[data-testid="stSidebar"] [data-testid="metric-container"] * {{
+            color: {metric_text_color} !important;
+        }}
+        
+        /* Force color on any element inside metric containers */
+        [data-testid="metric-container"] > * > *,
+        [data-testid="metric-container"] > * > * > *,
+        [data-testid="metric-container"] > * > * > * > * {{
+            color: {metric_text_color} !important;
+        }}
+
+        /* Fix expander (Preview Extracted Text) - FIXED */
+        .stExpander {{
+            background-color: {expander_bg} !important;
+            border: 1px solid {primary_color} !important;
+            border-radius: 8px !important;
+        }}
+        
+        .stExpander > div > div {{
+            background-color: {expander_bg} !important;
+        }}
+        
+        .stExpander summary {{
+            background-color: {expander_bg} !important;
+            color: {expander_text_color} !important;
+            font-weight: 600 !important;
+        }}
+        
+        .stExpander [data-testid="stExpanderDetails"] {{
+            background-color: {expander_bg} !important;
+            color: {expander_text_color} !important;
+        }}
+        
+        /* Fix expander content text area */
+        .stExpander .stTextArea textarea {{
+            color: {expander_text_color} !important;
+            background-color: {expander_bg} !important;
+            border: 1px solid {primary_color} !important;
+        }}
+        
+        .stExpander .stTextArea label {{
+            color: {expander_text_color} !important;
+        }}
+
+        /* File uploader styling - Fixed for better visibility */
+        .stFileUploader > div > div {{
+            background-color: transparent !important;
+            border: 2px dashed {primary_color} !important;
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }}
+        
+        /* File uploader text */
+        .stFileUploader label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Browse files button - Enhanced visibility */
+        .stFileUploader button {{
+            background-color: {button_bg} !important;
+            color: {button_text_color} !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 1rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }}
+        
+        .stFileUploader button:hover {{
+            background-color: {primary_color} !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+        }}
+        
+        /* Drag and drop text */
+        .stFileUploader small {{
+            color: {text_color} !important;
+        }}
+        
+        /* Header with animation */
         .main-header {{
-            font-size: 3rem; font-weight: bold; text-align: center;
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem; animation: glow 2s ease-in-out infinite alternate;
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            background: {header_gradient};
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            animation: glow 2s ease-in-out infinite alternate;
         }}
         
         @keyframes glow {{
@@ -158,45 +405,119 @@ def apply_theme():
             to {{ filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }}
         }}
         
-        .quiz-preview {{
-            background: {theme['card_bg']}; border-left: 5px solid {theme['primary']};
-            padding: 1.5rem; border-radius: 10px; margin: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: {theme['text']} !important;
+        /* File upload section - Removed box styling */
+        .file-uploader-container {{
+            border: none;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            background: {upload_bg};
+            margin: 1rem 0;
+            transition: all 0.3s ease;
         }}
         
-        .quiz-preview * {{
-            color: {theme['text']} !important;
+        .file-uploader-container:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }}
+        
+        /* Stats cards */
+        .stats-card {{
+            background: {stats_gradient};
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }}
+        
+        /* Quiz preview */
+        .quiz-preview {{
+            background: {card_bg};
+            border-left: 5px solid {primary_color};
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: {card_text_color};
+        }}
+        
+        /* Success animation */
+        .success-animation {{
+            animation: bounce 1s infinite;
+            color: {text_color};
+        }}
+        
+        @keyframes bounce {{
+            0%, 20%, 50%, 80%, 100% {{ transform: translateY(0); }}
+            40% {{ transform: translateY(-10px); }}
+            60% {{ transform: translateY(-5px); }}
+        }}
+        
+        /* Footer text */
+        .footer-text {{
+            color: #666;
+            text-align: center;
+            padding: 2rem;
         }}
     </style>
     """, unsafe_allow_html=True)
 
-# Apply theme
-apply_theme()
+# Apply theme CSS
+apply_theme_css()
 
-# Header
+# Header with animation
 st.markdown('<h1 class="main-header">🧠 AI Quiz Generator Pro</h1>', unsafe_allow_html=True)
 
-# Sidebar
+# Sidebar with statistics and settings
 with st.sidebar:
     st.markdown("### 📊 Dashboard")
     
-    # Custom metrics
-    col1, col2 = st.columns(2)
-    metric_style = f"background-color: {THEMES[st.session_state.theme]['card_bg']}; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #4ecdc4;"
+    # Get theme colors for custom metrics
+    current_theme = st.session_state.get('theme', 'Default')
+    if current_theme == "Dark Mode":
+        metric_color = "#ffffff"
+        metric_bg = "#2d2d2d"
+    else:  # Default and Colorful
+        metric_color = "#000000" 
+        metric_bg = "#f8f9fa"
     
+    # Custom styled metrics using HTML instead of st.metric
+    col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"""
-        <div style="{metric_style}">
-            <div style="color: {THEMES[st.session_state.theme]['text']}; font-size: 0.875rem; font-weight: 600;">Total Quizzes</div>
-            <div style="color: {THEMES[st.session_state.theme]['text']}; font-size: 1.875rem; font-weight: bold;">{len(st.session_state.quiz_history)}</div>
+        <div style="
+            background-color: {metric_bg};
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #4ecdc4;
+        ">
+            <div style="color: {metric_color}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
+                Total Quizzes
+            </div>
+            <div style="color: {metric_color}; font-size: 1.875rem; font-weight: bold; line-height: 1;">
+                {len(st.session_state.quiz_history)}
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown(f"""
-        <div style="{metric_style}">
-            <div style="color: {THEMES[st.session_state.theme]['text']}; font-size: 0.875rem; font-weight: 600;">Questions Generated</div>
-            <div style="color: {THEMES[st.session_state.theme]['text']}; font-size: 1.875rem; font-weight: bold;">{st.session_state.total_questions_generated}</div>
+        <div style="
+            background-color: {metric_bg};
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #4ecdc4;
+        ">
+            <div style="color: {metric_color}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
+                Questions Generated
+            </div>
+            <div style="color: {metric_color}; font-size: 1.875rem; font-weight: bold; line-height: 1;">
+                {st.session_state.total_questions_generated}
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -219,90 +540,46 @@ with st.sidebar:
         st.session_state.theme = new_theme
         st.rerun()
 
-# Main content
+# Main content area
 col1, col2 = st.columns([2, 1])
 
 with col1:
+    # File upload section with enhanced styling - Removed the container div
     st.markdown("### 📁 Upload Your Document")
     st.markdown("*Supports PDF, DOCX, and TXT files*")
-    uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
+    
+    uploaded_file = st.file_uploader(
+        "Choose a file", 
+        type=["pdf", "docx", "txt"],
+        help="Upload a document to generate quiz questions from"
+    )
 
 with col2:
+    # File info display
     if uploaded_file:
         st.markdown("### 📋 File Information")
-        st.write(f"**Filename:** {uploaded_file.name}")
-        st.write(f"**File size:** {uploaded_file.size / 1024:.2f} KB")
-        st.write(f"**File type:** {uploaded_file.type}")
+        file_details = {
+            "Filename": uploaded_file.name,
+            "File size": f"{uploaded_file.size / 1024:.2f} KB",
+            "File type": uploaded_file.type
+        }
+        for key, value in file_details.items():
+            st.write(f"**{key}:** {value}")
 
-def extract_text(path, ext, show_progress=True):
-    """Extract text from different file types"""
-    text = ""
-    
-    if ext == "pdf":
-        reader = PdfReader(path)
-        total = len(reader.pages)
-        if show_progress:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+# Progress tracking function
+def show_progress_bar(message, duration=2):
+    """Shows a progress bar with a status message."""
+    if show_progress:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
         
-        for i, page in enumerate(reader.pages):
-            text += f"\n[Page {i+1}]\n" + page.extract_text()
-            if show_progress:
-                progress_bar.progress((i + 1) / total)
-                status_text.text(f"📖 Processing page {i+1} of {total}")
+        for i in range(100):
+            progress_bar.progress(i + 1)
+            status_text.text(f'{message} {i+1}%')
+            time.sleep(duration/100)
         
-        if show_progress:
-            progress_bar.empty()
-            status_text.empty()
-            
-    elif ext == "docx":
-        doc = DocxDocument(path)
-        total = len(doc.paragraphs)
-        if show_progress:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-        
-        for i, para in enumerate(doc.paragraphs):
-            text += f"\n[Paragraph {i+1}]\n" + para.text
-            if show_progress:
-                progress_bar.progress((i + 1) / total)
-                status_text.text(f"📄 Processing paragraph {i+1} of {total}")
-        
-        if show_progress:
-            progress_bar.empty()
-            status_text.empty()
-            
-    elif ext == "txt":
-        with open(path, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-            total = len(lines)
-            if show_progress:
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-            
-            for i, line in enumerate(lines):
-                text += f"\n[Line {i+1}]\n" + line.strip()
-                if show_progress and ((i + 1) % 10 == 0 or i == total - 1):
-                    progress_bar.progress((i + 1) / total)
-                    status_text.text(f"📝 Processing line {i+1} of {total}")
-            
-            if show_progress:
-                progress_bar.empty()
-                status_text.empty()
-    
-    return text
-
-def clean_quiz_text(text):
-    """Clean generated quiz text"""
-    replacements = [
-        (r'\*+', ''), (r'#+\s*', ''), (r'_+', ''),
-        (r'\n\s*\n\s*\n+', '\n\n'), (r'(?<=\d\.)\s*(?=[A-Z])', '\n'),
-        (r'(?<=\))\s*(?=Answer:)', '\n'), (r'(\d+\.)', r'\n\1'),
-        (r'[ \t]+', ' '), (r'\n +', '\n')
-    ]
-    for pattern, replacement in replacements:
-        text = re.sub(pattern, replacement, text)
-    return text.strip()
+        status_text.empty()
+        progress_bar.empty()
 
 # File processing
 if uploaded_file:
@@ -312,33 +589,108 @@ if uploaded_file:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
 
+    def extract_text(path, ext):
+        """Extracts text from different file types (PDF, DOCX, TXT)."""
+        text = ""
+        if ext == "pdf":
+            reader = PdfReader(path)
+            total_pages = len(reader.pages)
+            
+            if show_progress:
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+            
+            for i, page in enumerate(reader.pages):
+                text += f"\n[Page {i+1}]\n" + page.extract_text()
+                
+                if show_progress:
+                    progress_percentage = (i + 1) / total_pages
+                    progress_bar.progress(progress_percentage)
+                    status_text.text(f"📖 Processing page {i+1} of {total_pages} ({int(progress_percentage * 100)}%)")
+            
+            if show_progress:
+                progress_bar.empty()
+                status_text.empty()
+                
+        elif ext == "docx":
+            doc = DocxDocument(path)
+            total_paragraphs = len(doc.paragraphs)
+            
+            if show_progress:
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+            
+            for i, para in enumerate(doc.paragraphs):
+                text += f"\n[Paragraph {i+1}]\n" + para.text
+                
+                if show_progress:
+                    progress_percentage = (i + 1) / total_paragraphs
+                    progress_bar.progress(progress_percentage)
+                    status_text.text(f"📄 Processing paragraph {i+1} of {total_paragraphs} ({int(progress_percentage * 100)}%)")
+            
+            if show_progress:
+                progress_bar.empty()
+                status_text.empty()
+                
+        elif ext == "txt":
+            with open(path, "r", encoding="utf-8") as file:
+                lines = file.readlines()
+                total_lines = len(lines)
+                
+                if show_progress:
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                
+                for i, line in enumerate(lines):
+                    text += f"\n[Line {i+1}]\n" + line.strip()
+                    
+                    if show_progress and (i + 1) % 10 == 0 or i == total_lines - 1:
+                        progress_percentage = (i + 1) / total_lines
+                        progress_bar.progress(progress_percentage)
+                        status_text.text(f"📝 Processing line {i+1} of {total_lines} ({int(progress_percentage * 100)}%)")
+                
+                if show_progress:
+                    progress_bar.empty()
+                    status_text.empty()
+                    
+        return text
+
     if st.button("🔄 Process File", type="primary"):
         with st.spinner("📖 Extracting text from your document..."):
-            text_data = extract_text(tmp_path, file_extension, show_progress)
+            text_data = extract_text(tmp_path, file_extension)
             os.remove(tmp_path)
 
         if text_data:
             st.session_state.text_data = text_data
-            st.success("✅ Text successfully extracted!")
+            st.markdown('<p class="success-animation">✅ Text successfully extracted!</p>', unsafe_allow_html=True)
             st.session_state.show_quiz_button = True
             
+            # Show text preview
             with st.expander("👀 Preview Extracted Text"):
-                preview = text_data[:500] + "..." if len(text_data) > 500 else text_data
-                st.text_area("Text Preview", preview, height=200)
+                st.text_area("Text Preview", text_data[:500] + "..." if len(text_data) > 500 else text_data, height=200, key="text_preview")
 
-# Quiz configuration
+def clean_quiz_text(text):
+    """Clean the generated quiz text by removing unwanted symbols and fixing spacing."""
+    text = re.sub(r'\*+', '', text)
+    text = re.sub(r'#+\s*', '', text)
+    text = re.sub(r'_+', '', text)
+    text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+    text = re.sub(r'(?<=\d\.)\s*(?=[A-Z])', '\n', text)
+    text = re.sub(r'(?<=\))\s*(?=Answer:)', '\n', text)
+    text = re.sub(r'(?<=Answer:)\s*([A-D]|True|False)', r' \1', text)
+    text = re.sub(r'(\d+\.)', r'\n\1', text)
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = re.sub(r'\n +', '\n', text)
+    return text.strip()
+
+# Quiz configuration section
 if st.session_state.get("show_quiz_button"):
     st.markdown("---")
     st.markdown("### 🎯 Customize Your Quiz")
     
-    # Presets
-    PRESETS = {
-        "quick": {"easy_mcq": 2, "medium_mcq": 1, "hard_mcq": 0, "easy_tf": 2, "medium_tf": 0, "hard_tf": 0},
-        "standard": {"easy_mcq": 3, "medium_mcq": 2, "hard_mcq": 1, "easy_tf": 3, "medium_tf": 1, "hard_tf": 0},
-        "comprehensive": {"easy_mcq": 5, "medium_mcq": 4, "hard_mcq": 3, "easy_tf": 5, "medium_tf": 2, "hard_tf": 1}
-    }
-    
+    # Preset options
     preset_col1, preset_col2, preset_col3 = st.columns(3)
+    
     with preset_col1:
         if st.button("📝 Quick Quiz (5 questions)", use_container_width=True):
             st.session_state.preset = "quick"
@@ -350,63 +702,102 @@ if st.session_state.get("show_quiz_button"):
             st.session_state.preset = "comprehensive"
     
     with st.form("quiz_form"):
+        # Custom prompt section
+        st.markdown("**🎨 Custom Instructions (Optional)**")
         custom_prompt = st.text_area(
-            "🎨 Custom Instructions (Optional)",
-            placeholder="Example: Include numerical problems, focus on definitions, add code examples, etc.",
-            height=100
+            "Add specific instructions for your quiz",
+            placeholder="Example: Include numerical problems for physics, focus on definitions for biology, add code examples for programming topics, etc.",
+            height=100,
+            help="Provide specific instructions about what type of questions you want based on your document content"
         )
         
         st.markdown("---")
         
-        # Get default values
-        default_values = PRESETS.get(st.session_state.get("preset"), 
-                                   {"easy_mcq": 2, "medium_mcq": 2, "hard_mcq": 1, "easy_tf": 2, "medium_tf": 2, "hard_tf": 1})
+        # Set default values based on preset
+        if st.session_state.get("preset") == "quick":
+            default_values = {"easy_mcq": 2, "medium_mcq": 1, "hard_mcq": 0, "easy_tf": 2, "medium_tf": 0, "hard_tf": 0}
+        elif st.session_state.get("preset") == "standard":
+            default_values = {"easy_mcq": 3, "medium_mcq": 2, "hard_mcq": 1, "easy_tf": 3, "medium_tf": 1, "hard_tf": 0}
+        elif st.session_state.get("preset") == "comprehensive":
+            default_values = {"easy_mcq": 5, "medium_mcq": 4, "hard_mcq": 3, "easy_tf": 5, "medium_tf": 2, "hard_tf": 1}
+        else:
+            default_values = {"easy_mcq": 2, "medium_mcq": 2, "hard_mcq": 1, "easy_tf": 2, "medium_tf": 2, "hard_tf": 1}
         
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("**🟢 Multiple Choice Questions**")
-            easy_mcq = st.number_input("Easy MCQs", min_value=0, value=default_values["easy_mcq"])
-            medium_mcq = st.number_input("Medium MCQs", min_value=0, value=default_values["medium_mcq"])
-            hard_mcq = st.number_input("Hard MCQs", min_value=0, value=default_values["hard_mcq"])
+            easy_mcq = st.number_input("Easy MCQs", min_value=0, value=default_values["easy_mcq"], key="easy_mcq")
+            medium_mcq = st.number_input("Medium MCQs", min_value=0, value=default_values["medium_mcq"], key="medium_mcq")
+            hard_mcq = st.number_input("Hard MCQs", min_value=0, value=default_values["hard_mcq"], key="hard_mcq")
         
         with col2:
             st.markdown("**🔴 True/False Questions**")
-            easy_tf = st.number_input("Easy True/False", min_value=0, value=default_values["easy_tf"])
-            medium_tf = st.number_input("Medium True/False", min_value=0, value=default_values["medium_tf"])
-            hard_tf = st.number_input("Hard True/False", min_value=0, value=default_values["hard_tf"])
+            easy_tf = st.number_input("Easy True/False", min_value=0, value=default_values["easy_tf"], key="easy_tf")
+            medium_tf = st.number_input("Medium True/False", min_value=0, value=default_values["medium_tf"], key="medium_tf")
+            hard_tf = st.number_input("Hard True/False", min_value=0, value=default_values["hard_tf"], key="hard_tf")
         
+        # Total questions display
         total_questions = easy_mcq + medium_mcq + hard_mcq + easy_tf + medium_tf + hard_tf
         st.info(f"📊 Total Questions: **{total_questions}**")
         
         submit_btn = st.form_submit_button("🚀 Generate Quiz", type="primary", use_container_width=True)
 
     if submit_btn and total_questions > 0:
-        prompt = f"""
+        # Build the base prompt
+        base_prompt = f"""
 You are an expert education assistant. Based on the following text:
 {st.session_state.text_data}
 
-Generate a quiz with:
-MULTIPLE CHOICE QUESTIONS: {easy_mcq} Easy, {medium_mcq} Medium, {hard_mcq} Hard
-TRUE/FALSE QUESTIONS: {easy_tf} Easy, {medium_tf} Medium, {hard_tf} Hard
+Generate a quiz with the following format:
 
-{f"SPECIAL INSTRUCTIONS: {custom_prompt.strip()}" if custom_prompt.strip() else ""}
+MULTIPLE CHOICE QUESTIONS:
+- {easy_mcq} Easy MCQs
+- {medium_mcq} Medium MCQs  
+- {hard_mcq} Hard MCQs
 
-For EACH MCQ: Question number, full question, four options (A-D), correct answer, detailed explanation, reference.
-For EACH T/F: Question number, statement, correct answer (True/False), detailed explanation, reference.
-
-Use clean text format. Clearly separate sections. Number questions continuously.
+TRUE/FALSE QUESTIONS:
+- {easy_tf} Easy True/False questions
+- {medium_tf} Medium True/False questions
+- {hard_tf} Hard True/False questions
 """
+
+        # Add custom instructions if provided
+        if custom_prompt.strip():
+            instruction_prompt = f"""
+SPECIAL INSTRUCTIONS:
+{custom_prompt.strip()}
+
+Please incorporate these specific requirements while generating the questions.
+"""
+            base_prompt += instruction_prompt
+
+        # Add the format requirements
+        format_prompt = """
+For EACH MCQ question, provide:
+1. Question number and full question
+2. Four options (A, B, C, D)
+3. Correct Answer: (A/B/C/D)
+4. Detailed Explanation: (Why this answer is correct)
+5. Reference: Page [X], Line [Y]
+
+For EACH True/False question, provide:
+1. Question number and statement
+2. Correct Answer: (True/False)
+3. Detailed Explanation: (Why this statement is true or false)
+4. Reference: Page [X], Line [Y]
+
+Use clean text format. Clearly separate MCQ and True/False sections. Number questions continuously.
+"""
+        
+        final_prompt = base_prompt + format_prompt
 
         with st.spinner("🤖 AI is crafting your personalized quiz..."):
             if show_progress:
-                progress_bar = st.progress(0)
-                for i in range(100):
-                    progress_bar.progress(i + 1)
-                    time.sleep(0.03)
-                progress_bar.empty()
+                show_progress_bar("Generating quiz", 3)
             
-            response = model.generate_content(prompt)
-            st.session_state.quiz_text = clean_quiz_text(response.text)
+            response = model.generate_content(final_prompt)
+            cleaned_text = clean_quiz_text(response.text)
+            st.session_state.quiz_text = cleaned_text
             
             # Update statistics
             st.session_state.total_questions_generated += total_questions
@@ -416,63 +807,82 @@ Use clean text format. Clearly separate sections. Number questions continuously.
                 'total_questions': total_questions
             })
             
-            st.balloons()
+            st.balloons()  # Celebration animation
             st.success("🎉 Quiz generated successfully!")
 
-# Quiz preview and download
+# Quiz preview and download section
 if st.session_state.get("quiz_text"):
     st.markdown("---")
     st.markdown("### 📋 Your Generated Quiz")
     
+    # Tabs for better organization
     tab1, tab2 = st.tabs(["📖 Preview", "⬇️ Download"])
     
     with tab1:
         st.markdown('<div class="quiz-preview">', unsafe_allow_html=True)
-        st.text_area("Generated Quiz:", value=st.session_state.quiz_text, height=400)
+        st.text_area("Generated Quiz:", value=st.session_state.quiz_text, height=400, key="quiz_preview")
         st.markdown('</div>', unsafe_allow_html=True)
     
     with tab2:
         st.markdown("### 📥 Download Your Quiz")
         
-        def create_file(content, file_type):
-            """Create downloadable files"""
-            if file_type == "pdf":
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-                    doc = SimpleDocTemplate(f.name, pagesize=letter)
-                    styles = getSampleStyleSheet()
-                    story = [Paragraph(line.strip(), styles["Normal"]) if line.strip() else Spacer(1, 12) 
-                            for line in content.split('\n')]
-                    doc.build(story)
-                    return f.name
-            elif file_type == "docx":
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as f:
-                    doc = DocxWriter()
-                    for line in content.split('\n'):
-                        doc.add_paragraph(line.strip() if line.strip() else "")
-                    doc.save(f.name)
-                    return f.name
-            elif file_type == "txt":
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode='w', encoding='utf-8') as f:
-                    f.write(content)
-                    return f.name
+        def save_pdf(content, file_path):
+            """Saves quiz content to a PDF file."""
+            styles = getSampleStyleSheet()
+            doc = SimpleDocTemplate(file_path, pagesize=letter)
+            lines = content.split('\n')
+            story = []
+            for line in lines:
+                if line.strip():
+                    story.append(Paragraph(line.strip(), styles["Normal"]))
+                else:
+                    story.append(Spacer(1, 12))
+            doc.build(story)
+
+        def save_docx(content, file_path):
+            """Saves quiz content to a DOCX file."""
+            doc = DocxWriter()
+            lines = content.split('\n')
+            for line in lines:
+                if line.strip():
+                    doc.add_paragraph(line.strip())
+                else:
+                    doc.add_paragraph("")
+            doc.save(file_path)
+
+        def save_txt(content, file_path):
+            """Saves quiz content to a TXT file."""
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        download_col1, download_col2, download_col3 = st.columns(3)
         
-        col1, col2, col3 = st.columns(3)
-        
-        for col, (format_type, icon, mime) in zip([col1, col2, col3], 
-                                                 [("pdf", "📄", "application/pdf"),
-                                                  ("docx", "📝", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-                                                  ("txt", "📋", "text/plain")]):
-            with col:
-                file_path = create_file(st.session_state.quiz_text, format_type)
-                with open(file_path, "rb") as f:
-                    st.download_button(f"{icon} {format_type.upper()} Format", f, 
-                                     file_name=f"quiz.{format_type}", mime=mime, use_container_width=True)
+        with download_col1:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
+                save_pdf(st.session_state.quiz_text, pdf_file.name)
+                with open(pdf_file.name, "rb") as f:
+                    st.download_button("📄 PDF Format", f, file_name="quiz.pdf", mime="application/pdf", use_container_width=True)
+
+        with download_col2:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as docx_file:
+                save_docx(st.session_state.quiz_text, docx_file.name)
+                with open(docx_file.name, "rb") as f:
+                    st.download_button("📝 Word Document", f, file_name="quiz.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+
+        with download_col3:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as txt_file:
+                save_txt(st.session_state.quiz_text, txt_file.name)
+                with open(txt_file.name, "rb") as f:
+                    st.download_button("📋 Text File", f, file_name="quiz.txt", mime="text/plain", use_container_width=True)
 
 # Footer
 st.markdown("---")
-st.markdown("""
-<div style="color: #666; text-align: center; padding: 2rem;">
-    Made with ❤️ using Streamlit & Google Gemini AI<br>
-    <small>Transform your documents into engaging quizzes instantly!</small>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="footer-text">
+        Made with ❤️ using Streamlit & Google Gemini AI<br>
+        <small>Transform your documents into engaging quizzes instantly!</small>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
